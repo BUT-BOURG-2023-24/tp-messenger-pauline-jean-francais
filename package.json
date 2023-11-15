@@ -12,7 +12,7 @@
     "testcoverage": "jest --coverage --detectOpenHandles"
   },
   "keywords": [],
-  "author": "",
+  "author": "TRONTIN Pauline & MARCOURT Jean-François based on MONTES Yannick's project",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
