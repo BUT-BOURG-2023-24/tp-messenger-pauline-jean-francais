@@ -2,15 +2,17 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 import { MongooseID } from "../../../types";
 
 export interface IMessage extends Document {
-	conversationId: Types.ObjectId | string;
-  	from: Types.ObjectId | string;
+	// conversationId: Types.ObjectId | string;
+	// from: Types.ObjectId | string;
+	conversationId: MongooseID;
+	from: MongooseID;
   	content: string;
   	postedAt: Date;
   	replyTo: Types.ObjectId | string | null;
   	edited: boolean;
   	deleted: boolean;
-	reactions:{[userId:string]:string};
-  	//reactions: Record<MongooseID, string>;
+	// reactions:{[userId:string]:string};
+  	reactions: Record<MongooseID, string>;
 }
 
 const MessageSchema: Schema<IMessage> = new Schema<IMessage>({
