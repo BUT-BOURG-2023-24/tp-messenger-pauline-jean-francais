@@ -1,97 +1,41 @@
-import {Request, Response} from "express";
 import bcrypt from "bcrypt";
 import userModel, {IUser} from "../database/Mongo/Models/UserModel";
 import {pickRandom} from "../pictures";
-import UserRepository from "../repository/userRepository";
-import {SocketController} from "../socket/socketController";
+import userRepository from "../repository/userRepository";
+import {UserResponse} from "../response/userResponse";
+import {ErrorEnum} from "../response/errorEnum";
+import {Error400, Error500} from "../Error/error";
 
 const jwt = require('jsonwebtoken');
 
-const userRepository: UserRepository = new UserRepository();
-const EXPIRES_TIME_TOKEN: string = '1h';
-
 class UserController {
+    private readonly EXPIRES_TIME_TOKEN: string = '1h';
 
-    public async getUserById(req: Request, res: Response): Promise<Response> {
-        try {
-            const userId: string = req.params.id;
-            const user: IUser | null = await userRepository.getUserById(userId);
-            if (!user) {
-                return res.status(404).json({message: 'User not found'});
-            }
-            return res.status(200).json(user);
-
-        } catch (error) {
-            return res.status(500).json({message: 'Server error'});
-        }
+    public async getAllUsers(): Promise<IUser[]> {
+        return await userRepository.getAllUsers();
     }
 
-    public async getUsersByIds(req: Request, res: Response): Promise<Response> {
-        try {
-            const users: IUser[] | null = await userRepository.getUsersbyIds(req.body.ids);
-            if (!users || users.length === 0) {
-                return res.status(404).json({message: 'User not found'});
-            }
-            return res.status(200).json(users);
-
-        } catch (error) {
-            return res.status(500).json({message: 'Server error'});
-        }
+    public async getUserById(userId: string): Promise<IUser | null> {
+          return await userRepository.getUserById(userId);
     }
 
-    public async getOnlineUsers(req: Request, res: Response): Promise<Response> {
-        try {
-        const userIds: string[] = Array.from(SocketController.userSocketMap.values());
-        const users: IUser[] | null = await userRepository.getUsersbyIds(userIds);
-        return res.status(200).json(users);
-
-        } catch (error) {
-            return res.status(500).json({message: 'Server error'});
-        }
-    }
-    
-
-    public async getUserByName(req: Request, res: Response): Promise<Response> {
-        try {
-            const name: string = req.params.name;
-            const user: IUser | null = await userRepository.getUserByName(name);
-            if (!user) {
-                return res.status(404).json({message: 'User not found'});
-            }
-            return res.status(200).json(user);
-
-        } catch (error) {
-            return res.status(500).json({message: 'Server error'});
-        }
+    public async getUserByName(username: string): Promise<IUser | null> {
+        return await userRepository.getUserByName(username);
     }
 
-   
-
-    public async login(req: Request, res: Response): Promise<Response> {
-        const {username} = req.body;
-        const isNewUser: boolean = await UserController.checkIfUserExist(username);
-        if (!isNewUser) {
-            return await UserController.signin(req, res);
-
-        } else {
-            return await UserController.createUser(req, res);
-        }
+    public async getUsersByIds(usersId: string[]): Promise<IUser[]> {
+        return await userRepository.getUsersbyIds(usersId);
     }
-    public async getAllUsers(req: Request, res: Response): Promise<Response> {
-        try {
-            const users: IUser[] | null = await userRepository.getAllUsers();
-            if (!users || users.length === 0) {
-                return res.status(404).json({message: 'User not found'});
-            }
-            return res.status(200).json(users);
 
-        } catch (error) {
-            return res.status(500).json({message: 'Server error'});
+    public async loginOrRegister(username: string, password: string): Promise<UserResponse> {
+        const isNewUser: IUser | null = await this.checkIfUserExist(username);
+        if (isNewUser === null) {
+            return await this.createUser(username, password);
         }
+        return await this.login(isNewUser, password);
     }
-    public static async createUser(req: Request, res: Response): Promise<Response> {
-        try {
-        const {password, username} = req.body;
+
+    public async createUser(username: string, password: string): Promise<UserResponse> {
         let hashPassword: string = await bcrypt.hash(password, 5);
         const userFromRequest: IUser = new userModel({
             username: username,
@@ -100,52 +44,27 @@ class UserController {
         });
         const user: IUser | null = await userRepository.createUser(userFromRequest);
         if (!user) {
-            return res.status(404).json({message: 'User not found'});
-            
+            throw new Error500(ErrorEnum.INTERNAL_SERVER_ERROR);
         }
-
-        const token = jwt.sign({userId: user._id}, process.env.SECRET_KEY, {expiresIn: EXPIRES_TIME_TOKEN});
-        return res.status(201).json({
-            user,
-            "token": token,
-            "isNewUser": "true"
-        });
-        } catch (error) {
-            return res.status(500).json({message: 'Server error'});
-        }
+        const token = jwt.sign({userId: user._id}, process.env.SECRET_KEY, {expiresIn: this.EXPIRES_TIME_TOKEN});
+        return new UserResponse(user, token, true);
     }
-    public static async signin(req: Request, res: Response): Promise<Response> {
-        try {
-            const {password, username} = req.body;
-            const user: IUser | null = await userRepository.getUserByName(username);
-            if (!user) {
-                return res.status(400).json({message: 'login or password incorrect'});
-            }
 
-            const passwordMatch: boolean = await bcrypt.compare(password, user.password);
-            
-            if (!passwordMatch) {
-                return res.status(400).json({message: 'login or password incorrect'});
-            }
-
-            const token = jwt.sign({userId: user._id}, process.env.SECRET_KEY, {expiresIn: EXPIRES_TIME_TOKEN});
-            return res.status(200).json({
-                user,
-                token,
-                "isNewUser": "false"
-            });
-        } catch (error) {
-            return res.status(500).json({message: 'Server error'});
+    public async login(user: IUser, password: string): Promise<UserResponse> {
+        const passwordMatch: boolean = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
+            throw new Error400(ErrorEnum.LOGIN_PASSWORD_NOT_MATCH);
         }
+        const token = jwt.sign({userId: user?._id}, process.env.SECRET_KEY, {expiresIn: this.EXPIRES_TIME_TOKEN});
+        return new UserResponse(user, token, false);
     }
-    public static async checkIfUserExist(username: string): Promise<boolean> {
+
+    public async checkIfUserExist(username: string): Promise<IUser | null> {
         const user: IUser | null = await userRepository.getUserByName(username);
-        
         if (!user) {
-            return true;
+            return null;
         }
-        
-        return false;
+        return user;
     }
 }
 

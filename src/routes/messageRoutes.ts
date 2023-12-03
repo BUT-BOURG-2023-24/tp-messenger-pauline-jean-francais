@@ -4,7 +4,7 @@ const router = express.Router();
 import {ApiResponse} from "../response/apiResponse";
 import {CodeEnum, ErrorEnum} from "../response/errorEnum";
 import messageController from "../controller/messageController";
-import {checkAuth} from "../middleware/auth";
+import {checkAuth} from "../middleware/authentification";
 import JoiValidator from "../middleware/joiValidator";
 import {ErrorResponse} from "../response/errorResponse";
 import {IMessage} from "../database/Mongo/Models/MessageModel";

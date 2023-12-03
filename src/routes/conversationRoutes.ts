@@ -1,7 +1,7 @@
 import express, {NextFunction, Request, Response} from "express";
 
 const router = express.Router();
-import {checkAuth} from "../middleware/auth";
+import {checkAuth} from "../middleware/authentification";
 import conversationController from "../controller/conversationController";
 import {ApiResponse} from "../response/apiResponse";
 import {CodeEnum, ErrorEnum} from "../response/errorEnum";
