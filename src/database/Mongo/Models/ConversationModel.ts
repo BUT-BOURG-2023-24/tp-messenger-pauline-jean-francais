@@ -1,41 +1,27 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 import { MongooseID } from "../../../types";
+import {IMessage} from "./MessageModel";
+import {IUser} from "./UserModel";
 
 export interface IConversation extends Document {
-	participants: Types.Array<Types.ObjectId | string>;
-  	messages: Types.Array<Types.ObjectId | string>;
-  	title: string;
-  	lastUpdate: Date;
-  	seen: {[userId:string]:string};
+  participants: IUser[];
+  messages: IMessage[];
+  title: String;
+  lastUpdate: Date;
+  seen: Map<MongooseID, MongooseID>;
 }
 
-const conversationSchema: Schema<IConversation> = new Schema<IConversation>({
-	participants: [
-		{
-		  type: Schema.Types.ObjectId,
-		  ref: "User",
-		},
-	  ],
-	  messages: [
-		{
-		  type: Schema.Types.ObjectId,
-		  ref: "Message",
-		},
-	  ],
-	  title: {
-		type: String,
-		required: true,
-	  },
-	  lastUpdate: {
-		type: Date,
-		default: Date.now,
-	  },
-	  seen: {
-		type: Map,
-		of: String,
-	  },
+const ConversationSchema: Schema<IConversation> = new Schema<IConversation>({
+  participants: [{ type: Schema.Types.ObjectId, ref: "user" }],
+  messages: [{ type: Schema.Types.ObjectId, ref: "message" }],
+  title: { type: String, required: true },
+  lastUpdate: { type: Date, required: true },
+  seen: {
+    type: Map,
+    of: String,
+  },
 });
 
-const ConversationModel = mongoose.model<IConversation>("Conversation", conversationSchema);
+const ConversationModel = mongoose.model<IConversation>("conversation", ConversationSchema);
 
 export default ConversationModel;

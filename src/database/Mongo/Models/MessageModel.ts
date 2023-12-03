@@ -1,57 +1,33 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
+import Reaction from "../../../enum/Reaction";
 import { MongooseID } from "../../../types";
 
 export interface IMessage extends Document {
-	// conversationId: Types.ObjectId | string;
-	// from: Types.ObjectId | string;
-	conversationId: MongooseID;
-	from: MongooseID;
-  	content: string;
-  	postedAt: Date;
-  	replyTo: Types.ObjectId | string | null;
-  	edited: boolean;
-  	deleted: boolean;
-	// reactions:{[userId:string]:string};
-  	reactions: Record<MongooseID, string>;
+  conversationId: MongooseID;
+  from: MongooseID;
+  content: String;
+  postedAt: Date;
+  replyTo: MongooseID | null;
+  edited: Boolean;
+  deleted: Boolean;
+  reactions: Map<MongooseID, Reaction> | null;
 }
 
 const MessageSchema: Schema<IMessage> = new Schema<IMessage>({
-	conversationId: {
-		type: Schema.Types.ObjectId,
-		ref: "Conversation",
-		required: true,
-	  },
-	  from: {
-		type: Schema.Types.ObjectId,
-		ref: "User",
-		required: true,
-	  },
-	  content: {
-		type: String,
-		required: true,
-	  },
-	  postedAt: {
-		type: Date,
-		default: Date.now,
-	  },
-	  replyTo: {
-		type: Schema.Types.ObjectId,
-		ref: "Message",
-	  },
-	  edited: {
-		type: Boolean,
-		default: false,
-	  },
-	  deleted: {
-		type: Boolean,
-		default: false,
-	  },
-	 reactions: { 
-		type: Map, 
-		of: String 
-	},
+  conversationId: {
+    type: Schema.ObjectId,
+    ref: "ConversationModel",
+    required: true,
+  },
+  from: { type: Schema.ObjectId, ref: "UserModel", required: true },
+  content: { type: String, required: true },
+  postedAt: { type: Date, required: true },
+  replyTo: { type: Schema.ObjectId, ref: "MessageModel" },
+  edited: { type: Boolean, required: true },
+  deleted: { type: Boolean, required: true },
+  reactions: { type: Map, of: String },
 });
 
-const MessageModel = mongoose.model<IMessage>("Message", MessageSchema);
+const MessageModel = mongoose.model<IMessage>("message", MessageSchema);
 
-export { MessageModel, MessageSchema };
+export default MessageModel;
