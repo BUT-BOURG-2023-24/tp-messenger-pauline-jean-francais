@@ -1,19 +1,19 @@
-import Reaction from "../enum/Reaction";
+import msgReaction from "../msgReact";
 
 export class ReactionHelper {
-    public static setReaction (reaction: string): Reaction | null
+    public static setReaction (reaction: string): msgReaction | null
     {
         switch (reaction) {
             case "HAPPY":
-                return Reaction.HAPPY;
+                return msgReaction.HAPPY;
             case "SAD":
-                return Reaction.SAD;
+                return msgReaction.SAD;
             case "THUMBSUP":
-                return Reaction.THUMBSUP;
+                return msgReaction.THUMBSUP;
             case "THUMBSDOWN":
-                return Reaction.THUMBSDOWN;
+                return msgReaction.THUMBSDOWN;
             case "LOVE":
-                return Reaction.LOVE;
+                return msgReaction.LOVE;
             default:
                 return null;
         }

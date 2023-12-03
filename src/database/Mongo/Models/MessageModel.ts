@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
-import Reaction from "../../../enum/Reaction";
+import Reaction from "../../../enum/msgReact";
 import { MongooseID } from "../../../types";
 
 export interface IMessage extends Document {
