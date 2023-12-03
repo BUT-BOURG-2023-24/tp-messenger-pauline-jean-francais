@@ -19,8 +19,8 @@ router.get("/", checkAuth, async (req: Request, res: Response,next: NextFunction
         const conversations: IConversation[] = await conversationController.getAllConversationsForUser(res.locals.userId.toString());
         return res.status(CodeEnum.OK).json({"conversations": conversations});
     } catch (error) {
-        next(error)
-        console.error()
+        next(error);
+        console.error();
     }
 });
 
@@ -31,7 +31,7 @@ router.post("/see/:id",checkAuth, async (req: Request, res: Response,next: NextF
         }
         return await conversationController.setConversationSeenForUserAndMessage(req.body.messageId ,req.params.id,res.locals.userId.toString());
     } catch (error) {
-        next
+        next(error);
     }
 });
 
@@ -73,7 +73,7 @@ router.delete("/:id", checkAuth,async (req: Request, res: Response, next: NextFu
             }
            return await conversationController.deleteConversation(req.params.id.toString());
         } catch (error) {
-            next(error)
+            next(error);
         }
 });
 
