@@ -1,11 +1,11 @@
 import * as joi from "joi";
 import {Request} from "express";
-import {userLoginSchema} from "./joi-schema/userLoginSchema";
-import {createConversationSchema} from "./joi-schema/createConversationSchema";
-import {addMessageConversationSchema} from "./joi-schema/addMessageConversationSchema";
-import {seeMessageConversationSchema} from "./joi-schema/seeMessageConversationSchema";
-import {reactionMessageSchema} from "./joi-schema/reactionMessageSchema";
-import {editMessageSchema} from "./joi-schema/editMessageSchema";
+import {userLoginSchema} from "./models-joi/userLoginSchema";
+import {createConversationSchema} from "./models-joi/createConversationSchema";
+import {addMessageConversationSchema} from "./models-joi/addMessageConversationSchema";
+import {seeMessageConversationSchema} from "./models-joi/seeMessageConversationSchema";
+import {reactionMessageSchema} from "./models-joi/reactionMessageSchema";
+import {editMessageSchema} from "./models-joi/editMessageSchema";
 
 interface JoiRequestValidatorResponse {
     error?: string
